@@ -181,7 +181,7 @@ export default function ProductsPage() {
           categoryName = categories[0].name
         } else {
           try {
-            const createdCat = await api.createCategory({ name: 'Uncategorized', slug: 'uncategorized', description: '' })
+            const createdCat = await api.createCategory({ name: 'Uncategorized', description: '' })
             categoryId = createdCat.id
             categoryName = createdCat.name
           } catch (err) {
@@ -190,12 +190,9 @@ export default function ProductsPage() {
         }
       }
 
-      const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')
-
       const payload: Partial<Product> = {
         name,
         sku,
-        slug,
         brand,
         price,
         stockStatus,
