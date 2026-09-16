@@ -1,9 +1,10 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Plus, Search, Edit, Trash2, Image as ImageIcon, Loader2 } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Image as ImageIcon, Loader2, Download } from "lucide-react"
 import { useEffect, useState } from "react"
 import { api, type Product, type Settings, type Category } from "@/lib/api"
+import { downloadPriceList } from "@/lib/price-list"
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -242,13 +243,24 @@ export default function ProductsPage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-[#f3f4f6]">Products</h1>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-            Add Product
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => downloadPriceList(products, categories, settings)}
+              disabled={products.length === 0}
+              className="flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors"
+              title="Download full price list as a WhatsApp-formatted text file"
+            >
+              <Download className="h-5 w-5" />
+              Price List
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              <Plus className="h-5 w-5" />
+              Add Product
+            </button>
+          </div>
         </div>
 
         <div className="mb-6">

@@ -1,9 +1,10 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Package, FolderKanban, TrendingUp, DollarSign, Loader2 } from "lucide-react"
+import { Package, FolderKanban, TrendingUp, DollarSign, Loader2, Download } from "lucide-react"
 import { useEffect, useState } from "react"
 import { api, type Product, type Category, type Settings } from "@/lib/api"
+import { downloadPriceList } from "@/lib/price-list"
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
@@ -69,7 +70,18 @@ export default function Home() {
   return (
     <DashboardLayout>
       <div className="p-8">
-        <h1 className="text-3xl font-bold text-[#f3f4f6] mb-8">Dashboard</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-[#f3f4f6]">Dashboard</h1>
+          <button
+            onClick={() => downloadPriceList(products, categories, settings)}
+            disabled={products.length === 0}
+            className="flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors"
+            title="Download full price list as a WhatsApp-formatted text file"
+          >
+            <Download className="h-5 w-5" />
+            Price List
+          </button>
+        </div>
         
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {stats.map((stat) => (
