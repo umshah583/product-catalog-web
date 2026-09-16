@@ -2,8 +2,9 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Plus, Search, Edit, Trash2, Tag, Loader2, Calendar, Percent, Gift } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { api, type PromotionalOffer, type Category, type Product } from "@/lib/api"
+import { useRealtimeSync } from "@/lib/use-realtime-sync"
 
 export default function PromotionalOffersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -18,27 +19,33 @@ export default function PromotionalOffersPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true)
-        const [offersData, categoriesData, productsData] = await Promise.all([
-          api.getPromotionalOffers(),
-          api.getCategories(),
-          api.getProducts(),
-        ])
-        setOffers(offersData)
-        setCategories(categoriesData)
-        setProducts(productsData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load promotional offers")
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      const [offersData, categoriesData, productsData] = await Promise.all([
+        api.getPromotionalOffers(),
+        api.getCategories(),
+        api.getProducts(),
+      ])
+      setOffers(offersData)
+      setCategories(categoriesData)
+      setProducts(productsData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load promotional offers")
+    } finally {
+      setLoading(false)
     }
-
-    fetchData()
   }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    fetchData()
+  }, [fetchData])
+
+  useRealtimeSync({
+    onProductsChanged: () => { api.getProducts().then(setProducts).catch(() => {}) },
+    onCategoriesChanged: () => { api.getCategories().then(setCategories).catch(() => {}) },
+    onOffersChanged: () => { api.getPromotionalOffers().then(setOffers).catch(() => {}) },
+  })
 
   const filteredOffers = offers.filter((offer) =>
     offer.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -300,8 +307,8 @@ export default function PromotionalOffersPage() {
 
       {/* Delete Modal */}
       {showDeleteModal && selectedOffer && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#171821] rounded-lg p-6 w-full max-w-md border border-[rgba(255,255,255,0.08)]">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-[#171821] rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)]">
             <h2 className="text-xl font-bold text-[#f3f4f6] mb-4">Delete Promotional Offer</h2>
             <p className="text-[#9ca3af] mb-6">
               Are you sure you want to delete "{selectedOffer.name}"? This action cannot be undone.
@@ -359,7 +366,7 @@ function OfferModal({ offer, categories, products, onClose, onSave, saving }: an
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-[#171821] rounded-lg p-6 w-full max-w-2xl border border-[rgba(255,255,255,0.08)] my-8">
+      <div className="bg-[#171821] rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)] my-8">
         <h2 className="text-xl font-bold text-[#f3f4f6] mb-6">
           {offer ? 'Edit Promotional Offer' : 'Add Promotional Offer'}
         </h2>

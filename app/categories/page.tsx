@@ -2,8 +2,9 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Plus, Search, Edit, Trash2, Folder, Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { api, type Category, type Product } from "@/lib/api"
+import { useRealtimeSync } from "@/lib/use-realtime-sync"
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -16,25 +17,30 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true)
-        const [categoriesData, productsData] = await Promise.all([
-          api.getCategories(),
-          api.getProducts(),
-        ])
-        setCategories(categoriesData)
-        setProducts(productsData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load categories")
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      const [categoriesData, productsData] = await Promise.all([
+        api.getCategories(),
+        api.getProducts(),
+      ])
+      setCategories(categoriesData)
+      setProducts(productsData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load categories")
+    } finally {
+      setLoading(false)
     }
-
-    fetchData()
   }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    fetchData()
+  }, [fetchData])
+
+  useRealtimeSync({
+    onProductsChanged: () => { api.getProducts().then(setProducts).catch(() => {}) },
+    onCategoriesChanged: () => { api.getCategories().then(setCategories).catch(() => {}) },
+  })
 
   const getCategoryProductCount = (categoryId: string) => {
     return products.filter(p => p.categoryId === categoryId).length
@@ -92,7 +98,7 @@ export default function CategoriesPage() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="p-8 flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <Loader2 className="h-8 w-8 text-[#8b5cf6] animate-spin" />
         </div>
       </DashboardLayout>
@@ -102,7 +108,7 @@ export default function CategoriesPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="p-8">
+        <div className="">
           <div className="bg-[#171821] rounded-xl p-6 border border-[rgba(239,68,68,0.3)]">
             <p className="text-[#ef4444]">Error: {error}</p>
           </div>
@@ -113,9 +119,9 @@ export default function CategoriesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-[#f3f4f6]">Categories</h1>
+      <div className="">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#f3f4f6]">Categories</h1>
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-4 py-2 rounded-lg transition-colors"
@@ -179,8 +185,8 @@ export default function CategoriesPage() {
         </div>
 
         {showAddModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#171821] rounded-xl p-6 w-full max-w-md border border-[rgba(255,255,255,0.08)]">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-[#171821] rounded-xl p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)]">
               <h2 className="text-2xl font-bold text-[#f3f4f6] mb-6">Add New Category</h2>
               <div className="space-y-4">
                 <div>
@@ -224,8 +230,8 @@ export default function CategoriesPage() {
         )}
 
         {showEditModal && selectedCategory && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#171821] rounded-xl p-6 w-full max-w-md border border-[rgba(255,255,255,0.08)]">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-[#171821] rounded-xl p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)]">
               <h2 className="text-2xl font-bold text-[#f3f4f6] mb-6">Edit Category</h2>
               <form onSubmit={handleUpdateCategory} className="space-y-4">
                 <div>
@@ -276,8 +282,8 @@ export default function CategoriesPage() {
         )}
 
         {showDeleteModal && selectedCategory && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#171821] rounded-xl p-6 w-full max-w-md border border-[rgba(255,255,255,0.08)]">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-[#171821] rounded-xl p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)]">
               <h2 className="text-2xl font-bold text-[#f3f4f6] mb-4">Delete Category</h2>
               <p className="text-[#9ca3af] mb-6">
                 Are you sure you want to delete "{selectedCategory.name}"? This action cannot be undone.

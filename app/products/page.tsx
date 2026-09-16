@@ -1,10 +1,12 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { ImageListEditor } from "@/components/image-list-editor"
 import { Plus, Search, Edit, Trash2, Image as ImageIcon, Loader2, Download } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { api, type Product, type Settings, type Category } from "@/lib/api"
 import { downloadPriceList } from "@/lib/price-list"
+import { useRealtimeSync } from "@/lib/use-realtime-sync"
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -17,29 +19,36 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [addImages, setAddImages] = useState<string[]>([])
+  const [editImages, setEditImages] = useState<string[]>([])
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [productsData, settingsData, categoriesData] = await Promise.all([
+        api.getProducts(),
+        api.getSettings(),
+        api.getCategories(),
+      ])
+      setProducts(productsData)
+      setSettings(settingsData)
+      setCategories(categoriesData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load products")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true)
-          const [productsData, settingsData, categoriesData] = await Promise.all([
-            api.getProducts(),
-            api.getSettings(),
-            api.getCategories(),
-          ])
-
-          setProducts(productsData)
-          setSettings(settingsData)
-          setCategories(categoriesData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load products")
-      } finally {
-        setLoading(false)
-      }
-    }
-
+    setLoading(true)
     fetchData()
-  }, [])
+  }, [fetchData])
+
+  useRealtimeSync({
+    onProductsChanged: () => { api.getProducts().then(setProducts).catch(() => {}) },
+    onCategoriesChanged: () => { api.getCategories().then(setCategories).catch(() => {}) },
+    onSettingsChanged: () => { api.getSettings().then(setSettings).catch(() => {}) },
+  })
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -81,6 +90,7 @@ export default function ProductsPage() {
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product)
+    setEditImages(product.images || [])
     setShowEditModal(true)
   }
 
@@ -124,7 +134,7 @@ export default function ProductsPage() {
         price: Number(formData.get('price')),
         stockStatus: formData.get('stockStatus') as 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK',
         description: formData.get('description') as string,
-        images: formData.get('imageUrl') ? [formData.get('imageUrl') as string] : selectedProduct.images,
+        images: editImages,
         specifications: (() => {
           const txt = formData.get('specifications') as string | null
           if (!txt) return selectedProduct.specifications
@@ -158,7 +168,6 @@ export default function ProductsPage() {
       const price = Number(formData.get('price')) || 0
       const stockStatus = (formData.get('stockStatus') as any) || 'IN_STOCK'
       const description = (formData.get('description') as string) || ''
-      const imageUrl = formData.get('imageUrl') as string | null
       const specifications = (() => {
         const txt = formData.get('specifications') as string | null
         if (!txt) return {}
@@ -198,7 +207,7 @@ export default function ProductsPage() {
         price,
         stockStatus,
         description,
-        images: imageUrl ? [imageUrl] : [],
+        images: addImages,
         specifications,
         categoryId,
         categoryName,
@@ -211,6 +220,7 @@ export default function ProductsPage() {
       const created = await api.createProduct(payload)
       setProducts([created, ...products])
       setShowAddModal(false)
+      setAddImages([])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create product')
     }
@@ -219,7 +229,7 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="p-8 flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <Loader2 className="h-8 w-8 text-[#8b5cf6] animate-spin" />
         </div>
       </DashboardLayout>
@@ -229,7 +239,7 @@ export default function ProductsPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="p-8">
+        <div className="">
           <div className="bg-[#171821] rounded-xl p-6 border border-[rgba(239,68,68,0.3)]">
             <p className="text-[#ef4444]">Error: {error}</p>
           </div>
@@ -240,10 +250,10 @@ export default function ProductsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-[#f3f4f6]">Products</h1>
-          <div className="flex items-center gap-3">
+      <div className="">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#f3f4f6]">Products</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               onClick={() => downloadPriceList(products, categories, settings)}
               disabled={products.length === 0}
@@ -277,7 +287,8 @@ export default function ProductsPage() {
         </div>
 
         <div className="bg-[#171821] rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b border-[rgba(255,255,255,0.08)]">
                 <th className="text-left p-4 text-sm font-medium text-[#9ca3af]">Product</th>
@@ -294,12 +305,17 @@ export default function ProductsPage() {
                 <tr key={product.id} className="border-b border-[rgba(255,255,255,0.08)] hover:bg-[#21222d]">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-[#21222d] rounded-lg flex items-center justify-center overflow-hidden">
+                      <div className="relative w-12 h-12 bg-[#21222d] rounded-lg flex items-center justify-center overflow-hidden">
                         {product.images && product.images.length > 0 ? (
                           // Use the converted URL (handles Google Drive share links)
                           <img src={convertImageUrl(product.images[0])} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
                           <ImageIcon className="h-6 w-6 text-[#9ca3af]" />
+                        )}
+                        {product.images && product.images.length > 1 && (
+                          <span className="absolute bottom-0 right-0 bg-black/70 text-white text-[10px] px-1 rounded-tl leading-tight">
+                            +{product.images.length - 1}
+                          </span>
                         )}
                       </div>
                       <span className="text-[#f3f4f6] font-medium">{product.name}</span>
@@ -341,11 +357,12 @@ export default function ProductsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
 
         {showAddModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#171821] rounded-xl p-6 w-full max-w-2xl border border-[rgba(255,255,255,0.08)]">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-[#171821] rounded-xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)]">
               <h2 className="text-2xl font-bold text-[#f3f4f6] mb-6">Add New Product</h2>
               <form onSubmit={handleCreateProduct} className="space-y-4">
                 <div>
@@ -416,12 +433,11 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Image URL</label>
-                  <input
-                    name="imageUrl"
-                    type="text"
-                    className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
-                    placeholder="https://example.com/image.jpg"
+                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Images</label>
+                  <ImageListEditor
+                    images={addImages}
+                    onChange={setAddImages}
+                    convertImageUrl={convertImageUrl}
                   />
                 </div>
                 <div>
@@ -452,8 +468,8 @@ export default function ProductsPage() {
         )}
 
         {showEditModal && selectedProduct && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#171821] rounded-xl p-6 w-full max-w-2xl border border-[rgba(255,255,255,0.08)]">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-[#171821] rounded-xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)]">
               <h2 className="text-2xl font-bold text-[#f3f4f6] mb-6">Edit Product</h2>
               <form onSubmit={handleUpdateProduct} className="space-y-4">
                 <div>
@@ -533,13 +549,11 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Image URL</label>
-                  <input
-                    name="imageUrl"
-                    type="text"
-                    defaultValue={selectedProduct.images?.[0] || ''}
-                    className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
-                    placeholder="https://example.com/image.jpg"
+                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Images</label>
+                  <ImageListEditor
+                    images={editImages}
+                    onChange={setEditImages}
+                    convertImageUrl={convertImageUrl}
                   />
                 </div>
                 <div>
@@ -571,8 +585,8 @@ export default function ProductsPage() {
         )}
 
         {showDeleteModal && selectedProduct && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-[#171821] rounded-xl p-6 w-full max-w-md border border-[rgba(255,255,255,0.08)]">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-[#171821] rounded-xl p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-[rgba(255,255,255,0.08)]">
               <h2 className="text-2xl font-bold text-[#f3f4f6] mb-4">Delete Product</h2>
               <p className="text-[#9ca3af] mb-6">
                 Are you sure you want to delete "{selectedProduct.name}"? This action cannot be undone.

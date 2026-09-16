@@ -2,9 +2,10 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Package, FolderKanban, TrendingUp, DollarSign, Loader2, Download } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { api, type Product, type Category, type Settings } from "@/lib/api"
 import { downloadPriceList } from "@/lib/price-list"
+import { useRealtimeSync } from "@/lib/use-realtime-sync"
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
@@ -13,27 +14,33 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true)
-        const [productsData, categoriesData, settingsData] = await Promise.all([
-          api.getProducts(),
-          api.getCategories(),
-          api.getSettings(),
-        ])
-        setProducts(productsData)
-        setCategories(categoriesData)
-        setSettings(settingsData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load data")
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      const [productsData, categoriesData, settingsData] = await Promise.all([
+        api.getProducts(),
+        api.getCategories(),
+        api.getSettings(),
+      ])
+      setProducts(productsData)
+      setCategories(categoriesData)
+      setSettings(settingsData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load data")
+    } finally {
+      setLoading(false)
     }
-
-    fetchData()
   }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    fetchData()
+  }, [fetchData])
+
+  useRealtimeSync({
+    onProductsChanged: () => { api.getProducts().then(setProducts).catch(() => {}) },
+    onCategoriesChanged: () => { api.getCategories().then(setCategories).catch(() => {}) },
+    onSettingsChanged: () => { api.getSettings().then(setSettings).catch(() => {}) },
+  })
 
   const currencySymbol = settings?.currencySymbol || '$'
 
@@ -47,7 +54,7 @@ export default function Home() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="p-8 flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <Loader2 className="h-8 w-8 text-[#8b5cf6] animate-spin" />
         </div>
       </DashboardLayout>
@@ -57,7 +64,7 @@ export default function Home() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="p-8">
+        <div className="">
           <div className="bg-[#171821] rounded-xl p-6 border border-[rgba(239,68,68,0.3)]">
             <p className="text-[#ef4444]">Error: {error}</p>
             <p className="text-sm text-[#9ca3af] mt-2">Make sure the backend is running at {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}</p>
@@ -69,9 +76,9 @@ export default function Home() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-[#f3f4f6]">Dashboard</h1>
+      <div className="">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#f3f4f6]">Dashboard</h1>
           <button
             onClick={() => downloadPriceList(products, categories, settings)}
             disabled={products.length === 0}

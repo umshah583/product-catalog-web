@@ -2,8 +2,9 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Building2, Phone, Mail, MapPin, Clock, Save, Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { api, type Settings } from "@/lib/api"
+import { useRealtimeSync } from "@/lib/use-realtime-sync"
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({
@@ -23,21 +24,25 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function fetchSettings() {
-      try {
-        setLoading(true)
-        const data = await api.getSettings()
-        setSettings(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load settings")
-      } finally {
-        setLoading(false)
-      }
+  const fetchSettings = useCallback(async () => {
+    try {
+      const data = await api.getSettings()
+      setSettings(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load settings")
+    } finally {
+      setLoading(false)
     }
-
-    fetchSettings()
   }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    fetchSettings()
+  }, [fetchSettings])
+
+  useRealtimeSync({
+    onSettingsChanged: () => { api.getSettings().then(setSettings).catch(() => {}) },
+  })
 
   const handleSave = async () => {
     try {
@@ -55,7 +60,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="p-8 flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <Loader2 className="h-8 w-8 text-[#8b5cf6] animate-spin" />
         </div>
       </DashboardLayout>
@@ -65,7 +70,7 @@ export default function SettingsPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="p-8">
+        <div className="">
           <div className="bg-[#171821] rounded-xl p-6 border border-[rgba(239,68,68,0.3)]">
             <p className="text-[#ef4444]">Error: {error}</p>
           </div>
@@ -76,8 +81,8 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <h1 className="text-3xl font-bold text-[#f3f4f6] mb-8">Settings</h1>
+      <div className="">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#f3f4f6] mb-6 sm:mb-8">Settings</h1>
 
         <div className="space-y-6">
           {/* Company Information */}
