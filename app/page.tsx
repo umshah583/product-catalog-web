@@ -1,6 +1,7 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { ProtectedRoute } from "@/components/protected-route"
 import { Package, FolderKanban, TrendingUp, DollarSign, Loader2, Download } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Product, type Category, type Settings } from "@/lib/api"
@@ -75,6 +76,7 @@ export default function Home() {
   }
 
   return (
+    <ProtectedRoute>
     <DashboardLayout>
       <div className="">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
@@ -138,5 +140,6 @@ export default function Home() {
         </div>
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }

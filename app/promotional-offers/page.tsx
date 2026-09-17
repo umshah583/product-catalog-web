@@ -1,6 +1,7 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { ProtectedRoute } from "@/components/protected-route"
 import { Plus, Search, Edit, Trash2, Tag, Loader2, Calendar, Percent, Gift } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type PromotionalOffer, type Category, type Product } from "@/lib/api"
@@ -168,6 +169,7 @@ export default function PromotionalOffersPage() {
   }
 
   return (
+    <ProtectedRoute>
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -335,6 +337,7 @@ export default function PromotionalOffersPage() {
         </div>
       )}
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }
 

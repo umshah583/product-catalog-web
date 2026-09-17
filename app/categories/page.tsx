@@ -1,6 +1,7 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { ProtectedRoute } from "@/components/protected-route"
 import { Plus, Search, Edit, Trash2, Folder, Loader2 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Category, type Product } from "@/lib/api"
@@ -118,6 +119,7 @@ export default function CategoriesPage() {
   }
 
   return (
+    <ProtectedRoute>
     <DashboardLayout>
       <div className="">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
@@ -307,5 +309,6 @@ export default function CategoriesPage() {
         )}
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }

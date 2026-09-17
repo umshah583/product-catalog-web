@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Package,
@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth-context"
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -24,7 +25,9 @@ const navigation = [
 ]
 
 export function Sidebar() {
+  const router = useRouter()
   const pathname = usePathname()
+  const { logout, user } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const navContent = (
@@ -53,7 +56,21 @@ export function Sidebar() {
 
   const footer = (
     <div className="border-t border-[rgba(255,255,255,0.08)] p-3">
-      <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#9ca3af] transition-colors hover:bg-[#21222d] hover:text-[#f3f4f6]">
+      {user && (
+        <div className="px-3 py-2 mb-1">
+          <p className="text-sm font-medium text-[#f3f4f6] truncate">
+            {user.firstName} {user.lastName}
+          </p>
+          <p className="text-xs text-[#9ca3af] truncate">{user.email}</p>
+        </div>
+      )}
+      <button
+        onClick={() => {
+          logout()
+          router.push("/login")
+        }}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#9ca3af] transition-colors hover:bg-[#21222d] hover:text-[#f3f4f6]"
+      >
         <LogOut className="h-5 w-5 shrink-0" />
         Logout
       </button>

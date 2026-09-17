@@ -2,6 +2,7 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ImageListEditor } from "@/components/image-list-editor"
+import { ProtectedRoute } from "@/components/protected-route"
 import { Plus, Search, Edit, Trash2, Image as ImageIcon, Loader2, Download } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Product, type Settings, type Category } from "@/lib/api"
@@ -249,6 +250,7 @@ export default function ProductsPage() {
   }
 
   return (
+    <ProtectedRoute>
     <DashboardLayout>
       <div className="">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
@@ -610,5 +612,6 @@ export default function ProductsPage() {
         )}
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }

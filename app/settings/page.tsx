@@ -1,6 +1,7 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { ProtectedRoute } from "@/components/protected-route"
 import { Building2, Phone, Mail, MapPin, Clock, Save, Loader2 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Settings } from "@/lib/api"
@@ -80,6 +81,7 @@ export default function SettingsPage() {
   }
 
   return (
+    <ProtectedRoute>
     <DashboardLayout>
       <div className="">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#f3f4f6] mb-6 sm:mb-8">Settings</h1>
@@ -258,5 +260,6 @@ export default function SettingsPage() {
         </div>
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }
