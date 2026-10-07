@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ProtectedRoute } from "@/components/protected-route"
-import { Building2, Phone, Mail, MapPin, Clock, Save, Loader2 } from "lucide-react"
+import { Building2, Phone, Mail, MapPin, Clock, Save, Loader2, Image } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Settings } from "@/lib/api"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
@@ -20,6 +20,9 @@ export default function SettingsPage() {
     workingHours: "",
     aboutCompany: "",
     whatsappEnabled: false,
+    bannerTitle: "",
+    bannerSubtitle: "",
+    bannerImageUrl: "",
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -213,6 +216,47 @@ export default function SettingsPage() {
                 placeholder="Tell customers about your company"
                 className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
               />
+            </div>
+          </div>
+
+          {/* Home Banner */}
+          <div className="bg-[#171821] rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
+            <h2 className="text-xl font-bold text-[#f3f4f6] mb-6 flex items-center gap-2">
+              <Image className="h-5 w-5" />
+              Home Banner
+            </h2>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-[#9ca3af] mb-2">Banner Title</label>
+                <input
+                  type="text"
+                  value={settings.bannerTitle ?? ""}
+                  onChange={(e) => setSettings({ ...settings, bannerTitle: e.target.value })}
+                  placeholder="Explore Latest Tech & Catalog"
+                  className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#9ca3af] mb-2">Banner Subtitle</label>
+                <input
+                  type="text"
+                  value={settings.bannerSubtitle ?? ""}
+                  onChange={(e) => setSettings({ ...settings, bannerSubtitle: e.target.value })}
+                  placeholder="Discover our latest products"
+                  className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#9ca3af] mb-2">Banner Image URL</label>
+                <input
+                  type="text"
+                  value={settings.bannerImageUrl ?? ""}
+                  onChange={(e) => setSettings({ ...settings, bannerImageUrl: e.target.value })}
+                  placeholder="https://example.com/banner.jpg (optional)"
+                  className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+                />
+                <p className="text-xs text-[#9ca3af] mt-1">Optional background image for the banner. Google Drive links are supported.</p>
+              </div>
             </div>
           </div>
 

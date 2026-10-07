@@ -54,6 +54,36 @@ interface Settings {
   workingHours: string
   aboutCompany: string
   whatsappEnabled: boolean
+  bannerTitle: string | null
+  bannerSubtitle: string | null
+  bannerImageUrl: string | null
+}
+
+interface OrderItem {
+  id: string
+  orderId: string
+  productId: string | null
+  productName: string
+  sku: string | null
+  unitPrice: string
+  quantity: number
+  lineTotal: string
+}
+
+interface Order {
+  id: string
+  orderNumber: string
+  customerName: string
+  customerPhone: string
+  customerEmail: string | null
+  notes: string | null
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+  totalAmount: string
+  currency: string
+  itemCount: number
+  items: OrderItem[]
+  createdAt: string
+  updatedAt: string
 }
 
 interface PromotionalOffer {
@@ -226,7 +256,24 @@ class ApiClient {
       method: 'DELETE',
     })
   }
+
+  // Orders
+  async getOrders(status?: string): Promise<Order[]> {
+    const query = status ? `?status=${status}` : ''
+    return this.request<Order[]>(`/orders${query}`)
+  }
+
+  async getOrder(id: string): Promise<Order> {
+    return this.request<Order>(`/orders/${id}`)
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<Order> {
+    return this.request<Order>(`/orders/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    })
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL, DEFAULT_TENANT_ID)
-export type { Product, Category, Settings, PromotionalOffer }
+export type { Product, Category, Settings, PromotionalOffer, Order, OrderItem }

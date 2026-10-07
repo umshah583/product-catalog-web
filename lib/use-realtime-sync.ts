@@ -10,12 +10,16 @@ interface RealtimeHandlers {
   onCategoriesChanged?: () => void
   onSettingsChanged?: () => void
   onOffersChanged?: () => void
+  onOrdersChanged?: () => void
 }
 
 /**
- * Connects to the backend realtime WebSocket and invokes the provided
- * handlers whenever the admin portal mutates data. Lets multiple admin
- * sessions stay in sync without manual refresh.
+ * Connects to the backend Socket.IO gateway (`/realtime` namespace) over a
+ * raw WebSocket using the Engine.IO v4 / Socket.IO v5 wire protocol:
+ *   0{...}                  -> server open packet
+ *   40/realtime,{...}       -> join namespace (we send this)
+ *   2 / 3                   -> ping / pong
+ *   42/realtime,["ev",data] -> event frame
  */
 export function useRealtimeSync(handlers: RealtimeHandlers) {
   const handlersRef = useRef(handlers)
@@ -34,7 +38,22 @@ export function useRealtimeSync(handlers: RealtimeHandlers) {
         wsUrl = `ws://${wsUrl.substring(7)}`
       }
       if (wsUrl.endsWith("/")) wsUrl = wsUrl.substring(0, wsUrl.length - 1)
-      return `${wsUrl}/realtime?tenant=${TENANT_SLUG}`
+      return `${wsUrl}/socket.io/?EIO=4&transport=websocket&tenant=${TENANT_SLUG}`
+    }
+
+    const handleEvent = (eventName: string) => {
+      const handlers = handlersRef.current
+      if (eventName.startsWith("product:")) {
+        handlers.onProductsChanged?.()
+      } else if (eventName.startsWith("category:")) {
+        handlers.onCategoriesChanged?.()
+      } else if (eventName === "settings:updated") {
+        handlers.onSettingsChanged?.()
+      } else if (eventName.startsWith("offer:")) {
+        handlers.onOffersChanged?.()
+      } else if (eventName.startsWith("order:")) {
+        handlers.onOrdersChanged?.()
+      }
     }
 
     const connect = () => {
@@ -43,27 +62,44 @@ export function useRealtimeSync(handlers: RealtimeHandlers) {
         ws = new WebSocket(buildUrl())
 
         ws.onopen = () => {
-          console.log("[Realtime] connected")
+          console.log("[Realtime] socket open")
         }
 
         ws.onmessage = (event) => {
           try {
-            const decoded = JSON.parse(event.data)
-            const eventName = decoded?.event as string | undefined
-            const handlers = handlersRef.current
-            if (!eventName) return
+            const raw = event.data as string
 
-            if (eventName.startsWith("product:")) {
-              handlers.onProductsChanged?.()
-            } else if (eventName.startsWith("category:")) {
-              handlers.onCategoriesChanged?.()
-            } else if (eventName === "settings:updated") {
-              handlers.onSettingsChanged?.()
-            } else if (eventName.startsWith("offer:")) {
-              handlers.onOffersChanged?.()
+            // Engine.IO ping -> reply pong
+            if (raw === "2") {
+              ws?.send("3")
+              return
+            }
+
+            // Server open packet `0{...}` -> join the /realtime namespace
+            if (raw.startsWith("0{")) {
+              ws?.send(`40/realtime,${JSON.stringify({ tenant: TENANT_SLUG })}`)
+              console.log("[Realtime] joining /realtime namespace")
+              return
+            }
+
+            // Namespace ack `40/realtime,{...}` or `40{...}` -> connected
+            if (raw.startsWith("40")) {
+              console.log("[Realtime] connected to namespace")
+              return
+            }
+
+            // Event frame `42/realtime,["event:name", {...}]`
+            if (raw.startsWith("42")) {
+              const idx = raw.indexOf(",")
+              const json = idx === -1 ? raw.substring(2) : raw.substring(idx + 1)
+              const decoded = JSON.parse(json)
+              if (Array.isArray(decoded) && typeof decoded[0] === "string") {
+                handleEvent(decoded[0])
+              }
+              return
             }
           } catch (e) {
-            // ignore non-JSON frames
+            // ignore malformed frames
           }
         }
 
