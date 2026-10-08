@@ -106,7 +106,11 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
   const logo = settings?.logoUrl || ""
 
   const css = `
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #1a1a2e; background: #fff; }
     .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 16mm 10mm; position: relative; }
     .page-break { page-break-before: always; }
