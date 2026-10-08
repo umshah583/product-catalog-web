@@ -15,10 +15,12 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Printer,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import { api, type Order } from "@/lib/api"
+import { api, type Order, type Settings } from "@/lib/api"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
+import { printDeliveryNote } from "@/lib/delivery-note"
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-[#f59e0b]/20 text-[#f59e0b]",
@@ -37,6 +39,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [settings, setSettings] = useState<Settings | null>(null)
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -53,6 +56,7 @@ export default function OrdersPage() {
   useEffect(() => {
     setLoading(true)
     fetchOrders()
+    api.getSettings().then(setSettings).catch(() => {})
   }, [fetchOrders])
 
   // Realtime: refresh when a new order arrives or is updated
@@ -220,12 +224,21 @@ export default function OrdersPage() {
                 <h2 className="text-lg font-bold text-[#f3f4f6]">
                   {selectedOrder.orderNumber}
                 </h2>
-                <button
-                  onClick={() => setSelectedOrder(null)}
-                  className="text-[#9ca3af] hover:text-[#f3f4f6]"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => printDeliveryNote(selectedOrder, settings)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#21222d] text-[#f3f4f6] text-xs hover:bg-[#8b5cf6] transition-colors"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                    Delivery Note
+                  </button>
+                  <button
+                    onClick={() => setSelectedOrder(null)}
+                    className="text-[#9ca3af] hover:text-[#f3f4f6]"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
               <div className="px-6 py-4 space-y-4">
