@@ -130,6 +130,58 @@ interface DeliveryNoteInput {
   items: DeliveryNoteItemInput[]
 }
 
+interface CreditAppDocument {
+  id: string
+  docType: string
+  fileName: string
+  fileUrl: string
+  fileKey: string
+  received: boolean
+  remarks: string | null
+  createdAt: string
+}
+
+interface CreditAppAudit {
+  id: string
+  action: string
+  detail: string | null
+  actor: string | null
+  createdAt: string
+}
+
+interface CreditApplication {
+  id: string
+  appNumber: string
+  customerName: string
+  customerPhone: string | null
+  customerEmail: string | null
+  customerTrn: string | null
+  status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED'
+  formData: Record<string, any>
+  signatureData: string | null
+  stampData: string | null
+  initials: string | null
+  internalNotes: string | null
+  reviewedBy: string | null
+  reviewedAt: string | null
+  submittedAt: string | null
+  createdAt: string
+  updatedAt: string
+  documents: CreditAppDocument[]
+  audits: CreditAppAudit[]
+}
+
+interface CreditApplicationInput {
+  customerName: string
+  customerPhone?: string
+  customerEmail?: string
+  customerTrn?: string
+  formData: Record<string, any>
+  signatureData?: string
+  stampData?: string
+  initials?: string
+}
+
 interface OrderItem {
   id: string
   orderId: string
@@ -383,6 +435,86 @@ class ApiClient {
       method: 'DELETE',
     })
   }
+
+  // Credit Applications
+  async getCreditApplications(status?: string): Promise<CreditApplication[]> {
+    const query = status ? `?status=${status}` : ''
+    return this.request<CreditApplication[]>(`/credit-applications${query}`)
+  }
+
+  async getCreditApplication(id: string): Promise<CreditApplication> {
+    return this.request<CreditApplication>(`/credit-applications/${id}`)
+  }
+
+  async createCreditApplication(data: CreditApplicationInput): Promise<CreditApplication> {
+    return this.request<CreditApplication>('/credit-applications', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateCreditApplication(id: string, data: CreditApplicationInput): Promise<CreditApplication> {
+    return this.request<CreditApplication>(`/credit-applications/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateCreditAppStatus(id: string, status: string, internalNotes?: string): Promise<CreditApplication> {
+    return this.request<CreditApplication>(`/credit-applications/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, internalNotes }),
+    })
+  }
+
+  async deleteCreditApplication(id: string): Promise<void> {
+    return this.request<void>(`/credit-applications/${id}`, { method: 'DELETE' })
+  }
+
+  async uploadFile(file: File): Promise<{ url: string; key: string }> {
+    const form = new FormData()
+    form.append('file', file)
+    const token = getAuthToken()
+    const headers: Record<string, string> = { 'x-tenant-slug': this.tenantId }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const res = await fetch(`${this.baseUrl}/upload/document`, {
+      method: 'POST',
+      headers,
+      body: form,
+    })
+    if (!res.ok) throw new Error('Upload failed')
+    return res.json()
+  }
+
+  async addCreditAppDocument(appId: string, data: { docType: string; fileName: string; fileUrl: string; fileKey?: string; received?: boolean; remarks?: string }) {
+    return this.request(`/credit-applications/${appId}/documents`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteCreditAppDocument(appId: string, docId: string): Promise<void> {
+    return this.request<void>(`/credit-applications/${appId}/documents/${docId}`, { method: 'DELETE' })
+  }
+
+  async updateCreditAppDocument(appId: string, docId: string, data: { received: boolean; remarks?: string }) {
+    return this.request(`/credit-applications/${appId}/documents/${docId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async fetchCreditAppPdf(id: string): Promise<Blob> {
+    const token = getAuthToken()
+    const headers: Record<string, string> = { 'x-tenant-slug': this.tenantId }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const res = await fetch(
+      `${this.baseUrl}/credit-applications/${id}/pdf?disposition=inline`,
+      { headers },
+    )
+    if (!res.ok) throw new Error('Failed to generate PDF')
+    return res.blob()
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL, DEFAULT_TENANT_ID)
@@ -397,4 +529,8 @@ export type {
   DeliveryNoteItem,
   DeliveryNoteInput,
   DeliveryNoteItemInput,
+  CreditApplication,
+  CreditApplicationInput,
+  CreditAppDocument,
+  CreditAppAudit,
 }
