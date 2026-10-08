@@ -252,6 +252,11 @@ export default function OrdersPage() {
                     <Phone className="h-4 w-4" />
                     {selectedOrder.customerPhone}
                   </div>
+                  {selectedOrder.customerAddress && (
+                    <div className="text-sm text-[#9ca3af] pl-6">
+                      {selectedOrder.customerAddress}
+                    </div>
+                  )}
                   {selectedOrder.customerEmail && (
                     <div className="text-sm text-[#9ca3af] pl-6">
                       {selectedOrder.customerEmail}
@@ -278,9 +283,11 @@ export default function OrdersPage() {
                       >
                         <div>
                           <div className="text-[#f3f4f6]">{item.productName}</div>
-                          {item.sku && (
-                            <div className="text-xs text-[#9ca3af]">SKU: {item.sku}</div>
-                          )}
+                          <div className="text-xs text-[#9ca3af]">
+                            {[item.brand, item.sku && `SKU: ${item.sku}`]
+                              .filter(Boolean)
+                              .join(" • ")}
+                          </div>
                         </div>
                         <div className="text-right">
                           <div className="text-[#f3f4f6]">x{item.quantity}</div>

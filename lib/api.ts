@@ -64,6 +64,7 @@ interface OrderItem {
   orderId: string
   productId: string | null
   productName: string
+  brand: string | null
   sku: string | null
   unitPrice: string
   quantity: number
@@ -76,6 +77,7 @@ interface Order {
   customerName: string
   customerPhone: string
   customerEmail: string | null
+  customerAddress: string | null
   notes: string | null
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
   totalAmount: string
