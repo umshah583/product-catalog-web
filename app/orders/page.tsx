@@ -7,6 +7,7 @@ import {
   Loader2,
   Search,
   Eye,
+  Trash2,
   X,
   Package,
   Phone,
@@ -65,6 +66,17 @@ export default function OrdersPage() {
       fetchOrders()
     },
   })
+
+  const handleDelete = async (orderId: string) => {
+    if (!confirm("Delete this order? This cannot be undone.")) return
+    try {
+      await api.deleteOrder(orderId)
+      setOrders((prev) => prev.filter((o) => o.id !== orderId))
+      if (selectedOrder?.id === orderId) setSelectedOrder(null)
+    } catch (err) {
+      alert("Failed to delete order")
+    }
+  }
 
   const handleStatusChange = async (orderId: string, status: string) => {
     setUpdatingStatus(true)
@@ -194,13 +206,21 @@ export default function OrdersPage() {
                         {new Date(order.createdAt).toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#21222d] text-[#f3f4f6] text-xs hover:bg-[#8b5cf6] transition-colors"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                          View
-                        </button>
+                        <div className="inline-flex gap-1.5">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#21222d] text-[#f3f4f6] text-xs hover:bg-[#8b5cf6] transition-colors"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            View
+                          </button>
+                          <button
+                            onClick={() => handleDelete(order.id)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#21222d] text-[#ef4444] text-xs hover:bg-[#ef4444]/20 transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -331,6 +351,16 @@ export default function OrdersPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                <div className="border-t border-[rgba(255,255,255,0.08)] pt-4">
+                  <button
+                    onClick={() => handleDelete(selectedOrder.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#ef4444]/15 text-[#ef4444] hover:bg-[#ef4444]/25 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete Order
+                  </button>
                 </div>
               </div>
             </div>

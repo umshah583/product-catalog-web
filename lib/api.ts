@@ -399,6 +399,10 @@ class ApiClient {
     })
   }
 
+  async deleteOrder(id: string): Promise<void> {
+    return this.request<void>(`/orders/${id}`, { method: 'DELETE' })
+  }
+
   // Delivery Notes
   async getDeliveryNotes(status?: string): Promise<DeliveryNote[]> {
     const query = status ? `?status=${status}` : ''
