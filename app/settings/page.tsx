@@ -20,6 +20,7 @@ export default function SettingsPage() {
     workingHours: "",
     aboutCompany: "",
     whatsappEnabled: false,
+    logoUrl: "",
     bannerTitle: "",
     bannerSubtitle: "",
     bannerImageUrl: "",
@@ -128,10 +129,18 @@ export default function SettingsPage() {
                   <option value="AED">AED (د.إ)</option>
                 </select>
               </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-[#9ca3af] mb-2">Logo URL</label>
+                <input
+                  type="text"
+                  value={settings.logoUrl ?? ""}
+                  onChange={(e) => setSettings({ ...settings, logoUrl: e.target.value })}
+                  placeholder="https://example.com/logo.png (shown on delivery notes)"
+                  className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+                />
+              </div>
             </div>
           </div>
-
-          {/* Contact Information */}
           <div className="bg-[#171821] rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
             <h2 className="text-xl font-bold text-[#f3f4f6] mb-6 flex items-center gap-2">
               <Phone className="h-5 w-5" />

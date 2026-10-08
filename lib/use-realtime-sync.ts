@@ -11,6 +11,7 @@ interface RealtimeHandlers {
   onSettingsChanged?: () => void
   onOffersChanged?: () => void
   onOrdersChanged?: () => void
+  onDeliveryNotesChanged?: () => void
 }
 
 /**
@@ -53,6 +54,8 @@ export function useRealtimeSync(handlers: RealtimeHandlers) {
         handlers.onOffersChanged?.()
       } else if (eventName.startsWith("order:")) {
         handlers.onOrdersChanged?.()
+      } else if (eventName.startsWith("delivery-note:")) {
+        handlers.onDeliveryNotesChanged?.()
       }
     }
 

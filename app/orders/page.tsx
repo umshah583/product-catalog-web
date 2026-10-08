@@ -20,7 +20,7 @@ import {
 import { useCallback, useEffect, useState } from "react"
 import { api, type Order, type Settings } from "@/lib/api"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
-import { printDeliveryNote } from "@/lib/delivery-note"
+import { printDeliveryNoteDoc, docFromOrder } from "@/lib/delivery-note"
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-[#f59e0b]/20 text-[#f59e0b]",
@@ -226,7 +226,7 @@ export default function OrdersPage() {
                 </h2>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => printDeliveryNote(selectedOrder, settings)}
+                    onClick={() => printDeliveryNoteDoc(docFromOrder(selectedOrder), settings)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#21222d] text-[#f3f4f6] text-xs hover:bg-[#8b5cf6] transition-colors"
                   >
                     <Printer className="h-3.5 w-3.5" />

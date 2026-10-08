@@ -54,9 +54,80 @@ interface Settings {
   workingHours: string
   aboutCompany: string
   whatsappEnabled: boolean
+  logoUrl: string | null
   bannerTitle: string | null
   bannerSubtitle: string | null
   bannerImageUrl: string | null
+}
+
+interface DeliveryNoteItem {
+  id: string
+  deliveryNoteId: string
+  productId: string | null
+  productName: string
+  brand: string | null
+  sku: string | null
+  barcode: string | null
+  quantity: number
+  unitPrice: string
+  lineTotal: string
+}
+
+interface DeliveryNote {
+  id: string
+  dnNumber: string
+  customerName: string
+  customerPhone: string
+  customerEmail: string | null
+  customerTrn: string | null
+  billingAddress: string | null
+  shippingAddress: string | null
+  notes: string | null
+  status: 'DRAFT' | 'PENDING' | 'DELIVERED' | 'CANCELLED'
+  salesman: string | null
+  warehouse: string | null
+  driver: string | null
+  vehicleNumber: string | null
+  orderId: string | null
+  orderNumber: string | null
+  deliveryDate: string | null
+  totalAmount: string
+  currency: string
+  itemCount: number
+  items: DeliveryNoteItem[]
+  createdAt: string
+  updatedAt: string
+}
+
+interface DeliveryNoteItemInput {
+  productId?: string
+  productName: string
+  brand?: string
+  sku?: string
+  barcode?: string
+  quantity: number
+  unitPrice: number
+  lineTotal: number
+}
+
+interface DeliveryNoteInput {
+  customerName: string
+  customerPhone: string
+  customerEmail?: string
+  customerTrn?: string
+  billingAddress?: string
+  shippingAddress?: string
+  notes?: string
+  salesman?: string
+  warehouse?: string
+  driver?: string
+  vehicleNumber?: string
+  orderId?: string
+  orderNumber?: string
+  deliveryDate?: string
+  totalAmount: number
+  currency?: string
+  items: DeliveryNoteItemInput[]
 }
 
 interface OrderItem {
@@ -275,7 +346,55 @@ class ApiClient {
       body: JSON.stringify({ status }),
     })
   }
+
+  // Delivery Notes
+  async getDeliveryNotes(status?: string): Promise<DeliveryNote[]> {
+    const query = status ? `?status=${status}` : ''
+    return this.request<DeliveryNote[]>(`/delivery-notes${query}`)
+  }
+
+  async getDeliveryNote(id: string): Promise<DeliveryNote> {
+    return this.request<DeliveryNote>(`/delivery-notes/${id}`)
+  }
+
+  async createDeliveryNote(data: DeliveryNoteInput): Promise<DeliveryNote> {
+    return this.request<DeliveryNote>('/delivery-notes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateDeliveryNote(id: string, data: DeliveryNoteInput): Promise<DeliveryNote> {
+    return this.request<DeliveryNote>(`/delivery-notes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateDeliveryNoteStatus(id: string, status: string): Promise<DeliveryNote> {
+    return this.request<DeliveryNote>(`/delivery-notes/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    })
+  }
+
+  async deleteDeliveryNote(id: string): Promise<void> {
+    return this.request<void>(`/delivery-notes/${id}`, {
+      method: 'DELETE',
+    })
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL, DEFAULT_TENANT_ID)
-export type { Product, Category, Settings, PromotionalOffer, Order, OrderItem }
+export type {
+  Product,
+  Category,
+  Settings,
+  PromotionalOffer,
+  Order,
+  OrderItem,
+  DeliveryNote,
+  DeliveryNoteItem,
+  DeliveryNoteInput,
+  DeliveryNoteItemInput,
+}
