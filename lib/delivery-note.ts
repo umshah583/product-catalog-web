@@ -96,7 +96,6 @@ function fmtNum(n: number): string {
  * page 2) in a new window and opens the browser print dialog.
  */
 export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | null) {
-  const companyName = (settings?.companyName || "AYN AL FAHAD TRADING L.L.C.").toUpperCase()
   const currencySymbol = settings?.currencySymbol || ""
   const currency = doc.currency || settings?.currency || "AED"
   const totalQty = doc.items.reduce((s, i) => s + i.quantity, 0)
@@ -116,9 +115,6 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
     .page-break { page-break-before: always; }
 
     .hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10mm; }
-    .brand-block .logo-text { font-size: 26px; font-weight: 800; color: #14335e; letter-spacing: 1px; line-height: 1.1; }
-    .brand-block .logo-sub { font-size: 15px; font-weight: 600; color: #14335e; letter-spacing: 3px; margin-top: 2px; }
-    .brand-block .tagline { font-size: 9.5px; letter-spacing: 2.4px; color: #2e9ad4; font-weight: 700; margin-top: 6px; }
     .brand-block img { height: 58px; margin-bottom: 4px; }
     .hdr-right { text-align: right; }
     .brands { font-size: 13px; font-weight: 700; color: #14335e; margin-bottom: 8px; }
@@ -173,11 +169,6 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
     .sign .slbl { width: 82px; font-weight: 600; }
     .sign .sline { flex: 1; border-bottom: 1px solid #666; height: 14px; }
     .thanks { font-size: 12.5px; font-weight: 700; color: #2e9ad4; margin-top: 8mm; }
-    .thanks .for { color: #14335e; font-weight: 600; margin-top: 2px; }
-
-    .stamp { position: absolute; right: 10mm; top: -8mm; width: 82px; height: 82px; border-radius: 50%; border: 2.5px solid rgba(20,51,94,0.55); box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 4.5px rgba(20,51,94,0.4); display: flex; align-items: center; justify-content: center; transform: rotate(-9deg); }
-    .stamp .inner { text-align: center; font-size: 6.8px; font-weight: 700; color: rgba(20,51,94,0.6); letter-spacing: 0.4px; line-height: 1.5; }
-    .stamp .inner .co { font-size: 7.5px; }
 
     .foot { position: absolute; left: 0; right: 0; bottom: 0; background: #14335e; color: #fff; padding: 10px 16mm; display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; }
     .foot .contact span { margin-right: 18px; }
@@ -208,8 +199,7 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
   const headerHtml = `
     <div class="hdr">
       <div class="brand-block">
-        ${logo ? `<img src="${esc(logo)}" alt="">` : `<div class="logo-text">${esc(companyName.split(" TRADING")[0])}</div><div class="logo-sub">TRADING L.L.C.</div>`}
-        <div class="tagline">YOUR TRUSTED DISTRIBUTION PARTNER</div>
+        ${logo ? `<img src="${esc(logo)}" alt="">` : ""}
       </div>
       <div class="hdr-right">
         <div class="brands">Infinix <span class="sep">|</span> PHILIPS <span class="sep">|</span> Mcdodo</div>
@@ -275,14 +265,6 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
       </div>
     </div>`
 
-  const stampHtml = `
-    <div class="stamp"><div class="inner">
-      <div class="co">AYN AL FAHAD</div>
-      <div>TRADING L.L.C.</div>
-      <div>★</div>
-      <div>DUBAI — UAE</div>
-    </div></div>`
-
   const footerHtml = `
     <div class="foot">
       <div class="contact">
@@ -306,7 +288,7 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
       ${tableHtml}
       ${notesTotalsHtml}
 
-      <div class="thanks">Thank you for your business!<div class="for">For ${esc(companyName.charAt(0) + companyName.slice(1).toLowerCase().replace(/l\.l\.c\./i, "L.L.C."))}</div></div>
+      <div class="thanks">Thank you for your business!</div>
 
       <div class="sign-wrap">
         <div class="sign">
@@ -320,7 +302,6 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
           <div class="srow"><span class="slbl">Signature:</span><span class="sline"></span></div>
           <div class="srow"><span class="slbl">Name:</span><span class="sline"></span></div>
           <div class="srow"><span class="slbl">Designation:</span><span class="sline"></span></div>
-          ${stampHtml}
         </div>
       </div>
 
@@ -349,7 +330,6 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
         </div>
         <div class="sign">
           <h6>Company Stamp</h6>
-          ${stampHtml.replace('top: -8mm', 'top: 2mm')}
         </div>
       </div>
       ${footerHtml}
