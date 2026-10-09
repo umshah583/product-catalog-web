@@ -208,9 +208,7 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
   const headerHtml = `
     <div class="hdr">
       <div class="brand-block">
-        ${logo ? `<img src="${esc(logo)}" alt="">` : ""}
-        <div class="logo-text">${esc(companyName.split(" TRADING")[0])}</div>
-        <div class="logo-sub">TRADING L.L.C.</div>
+        ${logo ? `<img src="${esc(logo)}" alt="">` : `<div class="logo-text">${esc(companyName.split(" TRADING")[0])}</div><div class="logo-sub">TRADING L.L.C.</div>`}
         <div class="tagline">YOUR TRUSTED DISTRIBUTION PARTNER</div>
       </div>
       <div class="hdr-right">
