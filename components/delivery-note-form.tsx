@@ -81,6 +81,7 @@ export function DeliveryNoteForm({ existing }: { existing?: DeliveryNote }) {
           productName: i.productName,
           brand: i.brand ?? "",
           sku: i.sku ?? "",
+          color: i.color ?? "",
           barcode: i.barcode ?? "",
           quantity: i.quantity,
           unitPrice: parseFloat(i.unitPrice),
@@ -153,6 +154,7 @@ export function DeliveryNoteForm({ existing }: { existing?: DeliveryNote }) {
       productName: p.name,
       brand: p.brand ?? "",
       sku: p.sku ?? "",
+      color: p.colors?.length === 1 ? p.colors[0] : "",
       unitPrice: price,
     })
   }
@@ -263,6 +265,7 @@ export function DeliveryNoteForm({ existing }: { existing?: DeliveryNote }) {
         productName: i.productName,
         brand: i.brand ?? null,
         sku: i.sku ?? null,
+        color: i.color ?? null,
         barcode: i.barcode ?? null,
         quantity: i.quantity,
         unitPrice: String(i.unitPrice),
@@ -421,11 +424,28 @@ export function DeliveryNoteForm({ existing }: { existing?: DeliveryNote }) {
                 <label className={labelCls}>Brand</label>
                 <input className={inputCls} value={row.brand ?? ""} onChange={(e) => updateItem(row._key, { brand: e.target.value })} />
               </div>
+              <div className="col-span-4 md:col-span-1">
+                <label className={labelCls}>Color</label>
+                {row.productId && products.find((p) => p.id === row.productId)?.colors?.length ? (
+                  <select
+                    className={inputCls}
+                    value={row.color ?? ""}
+                    onChange={(e) => updateItem(row._key, { color: e.target.value })}
+                  >
+                    <option value="">—</option>
+                    {products.find((p) => p.id === row.productId)!.colors.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input className={inputCls} value={row.color ?? ""} onChange={(e) => updateItem(row._key, { color: e.target.value })} />
+                )}
+              </div>
               <div className="col-span-4 md:col-span-2">
                 <label className={labelCls}>Model / SKU</label>
                 <input className={inputCls} value={row.sku ?? ""} onChange={(e) => updateItem(row._key, { sku: e.target.value })} />
               </div>
-              <div className="col-span-4 md:col-span-2">
+              <div className="col-span-4 md:col-span-1">
                 <label className={labelCls}>Barcode</label>
                 <input className={inputCls} value={row.barcode ?? ""} onChange={(e) => updateItem(row._key, { barcode: e.target.value })} />
               </div>

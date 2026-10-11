@@ -18,6 +18,7 @@ export interface DeliveryNoteDoc {
     productName: string
     brand?: string | null
     sku?: string | null
+    color?: string | null
     quantity: number
     unitPrice: number
     lineTotal: number
@@ -42,6 +43,7 @@ export function docFromDeliveryNote(dn: DeliveryNote): DeliveryNoteDoc {
       productName: i.productName,
       brand: i.brand,
       sku: i.sku,
+      color: i.color,
       quantity: i.quantity,
       unitPrice: parseFloat(i.unitPrice),
       lineTotal: parseFloat(i.lineTotal),
@@ -67,6 +69,7 @@ export function docFromOrder(order: Order): DeliveryNoteDoc {
       productName: i.productName,
       brand: i.brand,
       sku: i.sku,
+      color: i.color,
       quantity: i.quantity,
       unitPrice: parseFloat(i.unitPrice),
       lineTotal: parseFloat(i.lineTotal),
@@ -188,6 +191,7 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
         <td class="c">${i + 1}</td>
         <td>${esc(item.productName)}</td>
         <td>${item.brand ? esc(item.brand) : "—"}</td>
+        <td>${item.color ? esc(item.color) : "—"}</td>
         <td>${item.sku ? esc(item.sku) : "—"}</td>
         <td class="c">${item.quantity}</td>
         <td class="r">${fmtNum(item.unitPrice)}</td>
@@ -239,6 +243,7 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
           <th class="c">#</th>
           <th>Product Description</th>
           <th>Brand</th>
+          <th>Color</th>
           <th>Model / SKU</th>
           <th class="c">Qty</th>
           <th class="r">Unit Price (${esc(currency)})</th>

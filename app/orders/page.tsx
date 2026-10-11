@@ -302,7 +302,14 @@ export default function OrdersPage() {
                         className="flex justify-between text-sm bg-[#21222d] rounded-lg px-3 py-2"
                       >
                         <div>
-                          <div className="text-[#f3f4f6]">{item.productName}</div>
+                          <div className="text-[#f3f4f6]">
+                            {item.productName}
+                            {item.color && (
+                              <span className="ml-1.5 inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#8b5cf6]/20 text-[#a78bfa] align-middle">
+                                {item.color}
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-[#9ca3af]">
                             {[item.brand, item.sku && `SKU: ${item.sku}`]
                               .filter(Boolean)

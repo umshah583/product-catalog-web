@@ -136,6 +136,10 @@ export default function ProductsPage() {
         stockStatus: formData.get('stockStatus') as 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK',
         description: formData.get('description') as string,
         images: editImages,
+        colors: ((formData.get('colors') as string) || '')
+          .split(',')
+          .map((c) => c.trim())
+          .filter(Boolean),
         specifications: (() => {
           const txt = formData.get('specifications') as string | null
           if (!txt) return selectedProduct.specifications
@@ -209,6 +213,10 @@ export default function ProductsPage() {
         stockStatus,
         description,
         images: addImages,
+        colors: ((formData.get('colors') as string) || '')
+          .split(',')
+          .map((c) => c.trim())
+          .filter(Boolean),
         specifications,
         categoryId,
         categoryName,
@@ -443,6 +451,16 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Available Colors</label>
+                  <input
+                    name="colors"
+                    type="text"
+                    className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+                    placeholder="Black, White, Blue"
+                  />
+                  <p className="text-xs text-[#9ca3af] mt-1">Comma-separated — customers pick one of these before adding to cart</p>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>
                   <textarea
                     name="specifications"
@@ -557,6 +575,17 @@ export default function ProductsPage() {
                     onChange={setEditImages}
                     convertImageUrl={convertImageUrl}
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Available Colors</label>
+                  <input
+                    name="colors"
+                    type="text"
+                    defaultValue={(selectedProduct.colors || []).join(', ')}
+                    className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+                    placeholder="Black, White, Blue"
+                  />
+                  <p className="text-xs text-[#9ca3af] mt-1">Comma-separated — customers pick one of these before adding to cart</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>

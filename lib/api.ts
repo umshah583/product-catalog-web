@@ -26,6 +26,7 @@ interface Product {
   currency: string
   stockStatus: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'
   images: string[]
+  colors: string[]
   specifications: Record<string, string>
   featured: boolean
   createdAt: string
@@ -67,6 +68,7 @@ interface DeliveryNoteItem {
   productName: string
   brand: string | null
   sku: string | null
+  color: string | null
   barcode: string | null
   quantity: number
   unitPrice: string
@@ -104,6 +106,7 @@ interface DeliveryNoteItemInput {
   productName: string
   brand?: string
   sku?: string
+  color?: string
   barcode?: string
   quantity: number
   unitPrice: number
@@ -189,6 +192,7 @@ interface OrderItem {
   productName: string
   brand: string | null
   sku: string | null
+  color: string | null
   unitPrice: string
   quantity: number
   lineTotal: string
