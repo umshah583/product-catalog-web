@@ -81,11 +81,14 @@ export default function PromotionalOffersPage() {
   const handleSave = async (data: any) => {
     try {
       setSaving(true)
-      // Convert date strings to ISO-8601 format
+      // Convert date strings to Dubai-local boundaries (UTC+4):
+      // startDate = 00:00 Dubai, endDate = 23:59:59.999 Dubai so the
+      // last day is fully covered. Plain ISO conversion stored UTC
+      // midnight, delaying activation by 4h and cutting the end short.
       const formattedData = {
         ...data,
-        startDate: new Date(data.startDate).toISOString(),
-        endDate: new Date(data.endDate).toISOString(),
+        startDate: new Date(`${data.startDate}T00:00:00+04:00`).toISOString(),
+        endDate: new Date(`${data.endDate}T23:59:59.999+04:00`).toISOString(),
       }
       if (selectedOffer) {
         const updated = await api.updatePromotionalOffer(selectedOffer.id, formattedData)
