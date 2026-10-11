@@ -472,6 +472,18 @@ class ApiClient {
     })
   }
 
+  async updateUser(id: string, data: {
+    firstName?: string
+    lastName?: string
+    role?: 'ADMIN' | 'USER'
+    password?: string
+  }): Promise<{ id: string; updated: boolean }> {
+    return this.request<{ id: string; updated: boolean }>(`/auth/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
   async setUserActive(id: string, isActive: boolean): Promise<{ id: string; isActive: boolean }> {
     return this.request<{ id: string; isActive: boolean }>(`/auth/users/${id}/active`, {
       method: 'PATCH',
