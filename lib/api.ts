@@ -80,7 +80,7 @@ interface Customer {
   name: string | null
   email: string
   phone: string
-  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'BLOCKED'
   tenantId: string
   createdAt: string
   _count?: { orders: number }
@@ -437,7 +437,7 @@ class ApiClient {
     return this.request<Customer[]>('/customers')
   }
 
-  async updateCustomerStatus(id: string, status: 'PENDING' | 'APPROVED' | 'REJECTED'): Promise<Customer> {
+  async updateCustomerStatus(id: string, status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'BLOCKED'): Promise<Customer> {
     return this.request<Customer>(`/customers/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),

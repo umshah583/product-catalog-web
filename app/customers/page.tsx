@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ProtectedRoute } from "@/components/protected-route"
-import { Users, Search, CheckCircle, XCircle, Loader2, Clock } from "lucide-react"
+import { Users, Search, CheckCircle, XCircle, Loader2, Clock, Ban } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Customer } from "@/lib/api"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
@@ -11,6 +11,7 @@ const STATUS_STYLES: Record<Customer["status"], string> = {
   PENDING: "bg-[#f59e0b]/15 text-[#f59e0b]",
   APPROVED: "bg-[#10b981]/15 text-[#10b981]",
   REJECTED: "bg-[#ef4444]/15 text-[#ef4444]",
+  BLOCKED: "bg-[#6b7280]/15 text-[#6b7280]",
 }
 
 export default function CustomersPage() {
@@ -138,6 +139,7 @@ export default function CustomersPage() {
                           {c.status === "PENDING" && <Clock className="h-3 w-3" />}
                           {c.status === "APPROVED" && <CheckCircle className="h-3 w-3" />}
                           {c.status === "REJECTED" && <XCircle className="h-3 w-3" />}
+                          {c.status === "BLOCKED" && <Ban className="h-3 w-3" />}
                           {c.status}
                         </span>
                       </td>
@@ -155,12 +157,27 @@ export default function CustomersPage() {
                                   Approve
                                 </button>
                               )}
-                              {c.status !== "REJECTED" && (
+                              {c.status !== "REJECTED" && c.status !== "BLOCKED" && (
                                 <button
                                   onClick={() => setStatus(c.id, "REJECTED")}
                                   className="rounded-lg bg-[#ef4444]/15 px-3 py-1.5 text-xs font-medium text-[#ef4444] hover:bg-[#ef4444]/25 transition-colors"
                                 >
                                   Reject
+                                </button>
+                              )}
+                              {c.status !== "BLOCKED" ? (
+                                <button
+                                  onClick={() => setStatus(c.id, "BLOCKED")}
+                                  className="rounded-lg bg-[#6b7280]/15 px-3 py-1.5 text-xs font-medium text-[#9ca3af] hover:bg-[#6b7280]/25 hover:text-[#e5e7eb] transition-colors"
+                                >
+                                  Block
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setStatus(c.id, "APPROVED")}
+                                  className="rounded-lg bg-[#8b5cf6]/15 px-3 py-1.5 text-xs font-medium text-[#8b5cf6] hover:bg-[#8b5cf6]/25 transition-colors"
+                                >
+                                  Unblock
                                 </button>
                               )}
                             </>
