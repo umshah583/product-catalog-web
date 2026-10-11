@@ -20,6 +20,11 @@ interface ProductColor {
   image?: string
 }
 
+interface PriceTier {
+  minQty: number
+  price: number
+}
+
 interface Product {
   id: string
   name: string
@@ -34,6 +39,7 @@ interface Product {
   stockStatus: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'
   images: string[]
   colors: ProductColor[]
+  priceTiers: PriceTier[]
   specifications: Record<string, string>
   featured: boolean
   createdAt: string
@@ -560,6 +566,7 @@ export const api = new ApiClient(API_BASE_URL, DEFAULT_TENANT_ID)
 export type {
   Product,
   ProductColor,
+  PriceTier,
   Customer,
   Category,
   Settings,

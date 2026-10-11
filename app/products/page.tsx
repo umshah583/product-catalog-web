@@ -5,8 +5,9 @@ import { ImageListEditor } from "@/components/image-list-editor"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Plus, Search, Edit, Trash2, Image as ImageIcon, Loader2, Download } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import { api, type Product, type ProductColor, type Settings, type Category } from "@/lib/api"
+import { api, type Product, type ProductColor, type PriceTier, type Settings, type Category } from "@/lib/api"
 import { ColorPaletteEditor } from "@/components/color-palette-editor"
+import { PriceTierEditor } from "@/components/price-tier-editor"
 import { downloadPriceList } from "@/lib/price-list"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
 
@@ -25,6 +26,8 @@ export default function ProductsPage() {
   const [editImages, setEditImages] = useState<string[]>([])
   const [addColors, setAddColors] = useState<ProductColor[]>([])
   const [editColors, setEditColors] = useState<ProductColor[]>([])
+  const [addTiers, setAddTiers] = useState<PriceTier[]>([])
+  const [editTiers, setEditTiers] = useState<PriceTier[]>([])
 
   const fetchData = useCallback(async () => {
     try {
@@ -96,6 +99,7 @@ export default function ProductsPage() {
     setSelectedProduct(product)
     setEditImages(product.images || [])
     setEditColors(product.colors || [])
+    setEditTiers(product.priceTiers || [])
     setShowEditModal(true)
   }
 
@@ -141,6 +145,7 @@ export default function ProductsPage() {
         description: formData.get('description') as string,
         images: editImages,
         colors: editColors,
+        priceTiers: [...editTiers].sort((a, b) => a.minQty - b.minQty),
         specifications: (() => {
           const txt = formData.get('specifications') as string | null
           if (!txt) return selectedProduct.specifications
@@ -215,6 +220,7 @@ export default function ProductsPage() {
         description,
         images: addImages,
         colors: addColors,
+        priceTiers: [...addTiers].sort((a, b) => a.minQty - b.minQty),
         specifications,
         categoryId,
         categoryName,
@@ -229,6 +235,7 @@ export default function ProductsPage() {
       setShowAddModal(false)
       setAddImages([])
       setAddColors([])
+      setAddTiers([])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create product')
     }
@@ -454,6 +461,10 @@ export default function ProductsPage() {
                   <ColorPaletteEditor colors={addColors} onChange={setAddColors} images={addImages} />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Bulk Pricing Tiers</label>
+                  <PriceTierEditor tiers={addTiers} onChange={setAddTiers} currencySymbol={settings?.currencySymbol} />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>
                   <textarea
                     name="specifications"
@@ -572,6 +583,10 @@ export default function ProductsPage() {
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Available Colors</label>
                   <ColorPaletteEditor colors={editColors} onChange={setEditColors} images={editImages} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#9ca3af] mb-2">Bulk Pricing Tiers</label>
+                  <PriceTierEditor tiers={editTiers} onChange={setEditTiers} currencySymbol={settings?.currencySymbol} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>
