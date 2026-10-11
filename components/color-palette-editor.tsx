@@ -7,6 +7,8 @@ import type { ProductColor } from "@/lib/api"
 interface ColorPaletteEditorProps {
   colors: ProductColor[]
   onChange: (colors: ProductColor[]) => void
+  /** Product image URLs — when provided, each color can be linked to one */
+  images?: string[]
 }
 
 // Common catalog colors — click to add
@@ -38,7 +40,7 @@ const PALETTE: { name: string; hex: string }[] = [
  * a display name, a swatch hex, and an in-stock flag — colors marked
  * out of stock stay visible in the app but can't be selected.
  */
-export function ColorPaletteEditor({ colors, onChange }: ColorPaletteEditorProps) {
+export function ColorPaletteEditor({ colors, onChange, images = [] }: ColorPaletteEditorProps) {
   const [customName, setCustomName] = useState("")
   const [customHex, setCustomHex] = useState("#8b5cf6")
 
@@ -54,6 +56,10 @@ export function ColorPaletteEditor({ colors, onChange }: ColorPaletteEditorProps
 
   const toggleStock = (index: number) => {
     onChange(colors.map((c, i) => (i === index ? { ...c, inStock: !c.inStock } : c)))
+  }
+
+  const setImage = (index: number, image?: string) => {
+    onChange(colors.map((c, i) => (i === index ? { ...c, image } : c)))
   }
 
   return (
@@ -96,6 +102,41 @@ export function ColorPaletteEditor({ colors, onChange }: ColorPaletteEditorProps
               >
                 <X className="h-3 w-3" />
               </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Link each color to a product image */}
+      {colors.length > 0 && images.length > 0 && (
+        <div className="space-y-2 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#1a1b26] p-3">
+          <p className="text-xs text-[#9ca3af]">Link an image to each color (tap a thumbnail):</p>
+          {colors.map((c, i) => (
+            <div key={i} className="flex items-center gap-2 overflow-x-auto">
+              <span className="inline-flex items-center gap-1.5 shrink-0 text-xs text-[#f3f4f6] w-24">
+                <span
+                  className="h-3.5 w-3.5 rounded-full border border-white/20 shrink-0"
+                  style={{ backgroundColor: c.hex }}
+                />
+                <span className="truncate">{c.name}</span>
+              </span>
+              {images.map((img, imgIdx) => {
+                const linked = c.image === img
+                return (
+                  <button
+                    key={imgIdx}
+                    type="button"
+                    onClick={() => setImage(i, linked ? undefined : img)}
+                    className={`h-10 w-10 shrink-0 rounded-md overflow-hidden border-2 transition-all ${
+                      linked
+                        ? "border-[#8b5cf6] ring-1 ring-[#8b5cf6]"
+                        : "border-transparent opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={img} alt="" className="h-full w-full object-cover" />
+                  </button>
+                )
+              })}
             </div>
           ))}
         </div>

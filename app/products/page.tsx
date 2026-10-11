@@ -451,7 +451,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Available Colors</label>
-                  <ColorPaletteEditor colors={addColors} onChange={setAddColors} />
+                  <ColorPaletteEditor colors={addColors} onChange={setAddColors} images={addImages} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>
@@ -571,7 +571,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Available Colors</label>
-                  <ColorPaletteEditor colors={editColors} onChange={setEditColors} />
+                  <ColorPaletteEditor colors={editColors} onChange={setEditColors} images={editImages} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>

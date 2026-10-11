@@ -17,6 +17,7 @@ interface ProductColor {
   name: string
   hex: string
   inStock: boolean
+  image?: string
 }
 
 interface Product {
