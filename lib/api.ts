@@ -444,6 +444,14 @@ class ApiClient {
     })
   }
 
+  // Notifications
+  async sendBroadcast(title: string, body: string): Promise<{ id: string }> {
+    return this.request<{ id: string }>('/notifications/broadcast', {
+      method: 'POST',
+      body: JSON.stringify({ title, body }),
+    })
+  }
+
   // Delivery Notes
   async getDeliveryNotes(status?: string): Promise<DeliveryNote[]> {
     const query = status ? `?status=${status}` : ''

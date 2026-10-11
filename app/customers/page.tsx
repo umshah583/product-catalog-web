@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ProtectedRoute } from "@/components/protected-route"
-import { Users, Search, CheckCircle, XCircle, Loader2, Clock, Ban } from "lucide-react"
+import { Users, Search, CheckCircle, XCircle, Loader2, Clock, Ban, Megaphone } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Customer } from "@/lib/api"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
@@ -20,6 +20,10 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [showBroadcast, setShowBroadcast] = useState(false)
+  const [bcTitle, setBcTitle] = useState("")
+  const [bcBody, setBcBody] = useState("")
+  const [sending, setSending] = useState(false)
 
   const fetchData = useCallback(async () => {
     try {
@@ -50,6 +54,21 @@ export default function CustomersPage() {
     }
   }
 
+  const sendBroadcast = async () => {
+    if (!bcTitle.trim() || !bcBody.trim()) return
+    setSending(true)
+    try {
+      await api.sendBroadcast(bcTitle.trim(), bcBody.trim())
+      setBcTitle("")
+      setBcBody("")
+      setShowBroadcast(false)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to send")
+    } finally {
+      setSending(false)
+    }
+  }
+
   const filtered = customers.filter((c) => {
     const q = searchQuery.toLowerCase()
     return (
@@ -75,14 +94,23 @@ export default function CustomersPage() {
                 </p>
               </div>
             </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
-              <input
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowBroadcast(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#8b5cf6] px-4 py-2 text-sm font-medium text-white hover:bg-[#7c3aed] transition-colors"
+              >
+                <Megaphone className="h-4 w-4" />
+                Send Notification
+              </button>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search customers…"
                 className="bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg pl-9 pr-4 py-2 text-sm text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6] w-64"
               />
+              </div>
             </div>
           </div>
 
@@ -191,6 +219,56 @@ export default function CustomersPage() {
             )}
           </div>
         </div>
+
+        {showBroadcast && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-md rounded-xl bg-[#1a1b26] border border-[rgba(255,255,255,0.08)] p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[#8b5cf6]/15">
+                  <Megaphone className="h-5 w-5 text-[#8b5cf6]" />
+                </div>
+                <h2 className="text-lg font-bold text-[#f3f4f6]">Broadcast to Customers</h2>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#9ca3af] mb-2">Title</label>
+                <input
+                  value={bcTitle}
+                  onChange={(e) => setBcTitle(e.target.value)}
+                  maxLength={120}
+                  placeholder="e.g. New offers this week!"
+                  className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-sm text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#9ca3af] mb-2">Message</label>
+                <textarea
+                  value={bcBody}
+                  onChange={(e) => setBcBody(e.target.value)}
+                  rows={4}
+                  maxLength={1000}
+                  placeholder="Write your announcement…"
+                  className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-sm text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6] resize-none"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowBroadcast(false)}
+                  className="rounded-lg px-4 py-2 text-sm text-[#9ca3af] hover:text-[#f3f4f6] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={sendBroadcast}
+                  disabled={sending || !bcTitle.trim() || !bcBody.trim()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#8b5cf6] px-4 py-2 text-sm font-medium text-white hover:bg-[#7c3aed] disabled:opacity-50 transition-colors"
+                >
+                  {sending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Send to all customers
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </DashboardLayout>
     </ProtectedRoute>
   )
