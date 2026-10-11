@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ProtectedRoute } from "@/components/protected-route"
-import { Building2, Phone, Mail, MapPin, Clock, Save, Loader2, Image } from "lucide-react"
+import { Building2, Phone, Mail, MapPin, Clock, Save, Loader2, Image, Smartphone } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Settings } from "@/lib/api"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
@@ -24,6 +24,7 @@ export default function SettingsPage() {
     bannerTitle: "",
     bannerSubtitle: "",
     bannerImageUrl: "",
+    minAppVersion: "1.0.0",
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -266,6 +267,28 @@ export default function SettingsPage() {
                 />
                 <p className="text-xs text-[#9ca3af] mt-1">Optional background image for the banner. Google Drive links are supported.</p>
               </div>
+            </div>
+          </div>
+
+          {/* App Updates */}
+          <div className="bg-[#171821] rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
+            <h2 className="text-xl font-bold text-[#f3f4f6] mb-6 flex items-center gap-2">
+              <Smartphone className="h-5 w-5" />
+              App Updates
+            </h2>
+            <div>
+              <label className="block text-sm font-medium text-[#9ca3af] mb-2">Minimum App Version</label>
+              <input
+                type="text"
+                value={settings.minAppVersion ?? "1.0.0"}
+                onChange={(e) => setSettings({ ...settings, minAppVersion: e.target.value })}
+                placeholder="1.0.0"
+                className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
+              />
+              <p className="text-xs text-[#9ca3af] mt-1">
+                Any app build older than this version is forced to the Play Store update screen.
+                Set to the version number in pubspec.yaml (e.g. 1.0.0+7 → use 1.0.0 or 1.0.7).
+              </p>
             </div>
           </div>
 

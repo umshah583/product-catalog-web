@@ -66,6 +66,7 @@ interface Settings {
   bannerTitle: string | null
   bannerSubtitle: string | null
   bannerImageUrl: string | null
+  minAppVersion: string
 }
 
 interface Customer {
