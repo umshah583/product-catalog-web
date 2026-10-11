@@ -241,7 +241,7 @@ interface Order {
   customerEmail: string | null
   customerAddress: string | null
   notes: string | null
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+  status: 'PENDING' | 'CONFIRMED' | 'OUT_FOR_DELIVERY' | 'COMPLETED' | 'CANCELLED'
   totalAmount: string
   currency: string
   itemCount: number

@@ -26,11 +26,12 @@ import { printDeliveryNoteDoc, docFromOrder } from "@/lib/delivery-note"
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-[#f59e0b]/20 text-[#f59e0b]",
   CONFIRMED: "bg-[#3b82f6]/20 text-[#3b82f6]",
+  OUT_FOR_DELIVERY: "bg-[#a855f7]/20 text-[#a855f7]",
   COMPLETED: "bg-[#10b981]/20 text-[#10b981]",
   CANCELLED: "bg-[#ef4444]/20 text-[#ef4444]",
 }
 
-const STATUS_FILTERS = ["ALL", "PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"]
+const STATUS_FILTERS = ["ALL", "PENDING", "CONFIRMED", "OUT_FOR_DELIVERY", "COMPLETED", "CANCELLED"]
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -339,7 +340,7 @@ export default function OrdersPage() {
                     Update Status
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"] as const).map((s) => (
+                    {(["PENDING", "CONFIRMED", "OUT_FOR_DELIVERY", "COMPLETED", "CANCELLED"] as const).map((s) => (
                       <button
                         key={s}
                         disabled={updatingStatus || selectedOrder.status === s}
