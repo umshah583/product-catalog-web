@@ -68,6 +68,17 @@ interface Settings {
   bannerImageUrl: string | null
 }
 
+interface Customer {
+  id: string
+  name: string | null
+  email: string
+  phone: string
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  tenantId: string
+  createdAt: string
+  _count?: { orders: number }
+}
+
 interface DeliveryNoteItem {
   id: string
   deliveryNoteId: string
@@ -414,6 +425,18 @@ class ApiClient {
     return this.request<void>(`/orders/${id}`, { method: 'DELETE' })
   }
 
+  // Customers
+  async getCustomers(): Promise<Customer[]> {
+    return this.request<Customer[]>('/customers')
+  }
+
+  async updateCustomerStatus(id: string, status: 'PENDING' | 'APPROVED' | 'REJECTED'): Promise<Customer> {
+    return this.request<Customer>(`/customers/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    })
+  }
+
   // Delivery Notes
   async getDeliveryNotes(status?: string): Promise<DeliveryNote[]> {
     const query = status ? `?status=${status}` : ''
@@ -536,6 +559,7 @@ export const api = new ApiClient(API_BASE_URL, DEFAULT_TENANT_ID)
 export type {
   Product,
   ProductColor,
+  Customer,
   Category,
   Settings,
   PromotionalOffer,

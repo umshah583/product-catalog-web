@@ -13,6 +13,7 @@ interface RealtimeHandlers {
   onOrdersChanged?: () => void
   onDeliveryNotesChanged?: () => void
   onCreditAppsChanged?: () => void
+  onCustomersChanged?: () => void
 }
 
 /**
@@ -59,6 +60,8 @@ export function useRealtimeSync(handlers: RealtimeHandlers) {
         handlers.onDeliveryNotesChanged?.()
       } else if (eventName.startsWith("credit-application:")) {
         handlers.onCreditAppsChanged?.()
+      } else if (eventName.startsWith("customer:")) {
+        handlers.onCustomersChanged?.()
       }
     }
 

@@ -9,6 +9,7 @@ import {
   FolderKanban,
   ShoppingCart,
   Truck,
+  Users,
   FileSignature,
   Settings,
   Tag,
@@ -22,6 +23,7 @@ import { useAuth } from "@/lib/auth-context"
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
+  { name: "Customers", href: "/customers", icon: Users },
   { name: "Delivery Notes", href: "/delivery-notes", icon: Truck },
   { name: "Credit Applications", href: "/credit-applications", icon: FileSignature },
   { name: "Products", href: "/products", icon: Package },
