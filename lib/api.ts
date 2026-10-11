@@ -75,6 +75,16 @@ interface Settings {
   minAppVersion: string
 }
 
+interface PortalUser {
+  id: string
+  email: string
+  firstName: string | null
+  lastName: string | null
+  role: 'ADMIN' | 'USER'
+  isActive: boolean
+  createdAt: string
+}
+
 interface Customer {
   id: string
   name: string | null
@@ -444,6 +454,31 @@ class ApiClient {
     })
   }
 
+  // Team users (admin accounts + salesman app logins)
+  async getUsers(): Promise<PortalUser[]> {
+    return this.request<PortalUser[]>('/auth/users')
+  }
+
+  async createUser(data: {
+    email: string
+    password: string
+    firstName?: string
+    lastName?: string
+    role?: 'ADMIN' | 'USER'
+  }): Promise<PortalUser> {
+    return this.request<PortalUser>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async setUserActive(id: string, isActive: boolean): Promise<{ id: string; isActive: boolean }> {
+    return this.request<{ id: string; isActive: boolean }>(`/auth/users/${id}/active`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isActive }),
+    })
+  }
+
   // Notifications
   async sendBroadcast(title: string, body: string): Promise<{ id: string }> {
     return this.request<{ id: string }>('/notifications/broadcast', {
@@ -575,6 +610,7 @@ export type {
   Product,
   ProductColor,
   PriceTier,
+  PortalUser,
   Customer,
   Category,
   Settings,
