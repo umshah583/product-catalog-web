@@ -154,7 +154,7 @@ export function DeliveryNoteForm({ existing }: { existing?: DeliveryNote }) {
       productName: p.name,
       brand: p.brand ?? "",
       sku: p.sku ?? "",
-      color: p.colors?.length === 1 ? p.colors[0] : "",
+      color: p.colors?.length === 1 ? p.colors[0].name : "",
       unitPrice: price,
     })
   }
@@ -434,7 +434,7 @@ export function DeliveryNoteForm({ existing }: { existing?: DeliveryNote }) {
                   >
                     <option value="">—</option>
                     {products.find((p) => p.id === row.productId)!.colors.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c.name} value={c.name}>{c.name}</option>
                     ))}
                   </select>
                 ) : (

@@ -5,7 +5,8 @@ import { ImageListEditor } from "@/components/image-list-editor"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Plus, Search, Edit, Trash2, Image as ImageIcon, Loader2, Download } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import { api, type Product, type Settings, type Category } from "@/lib/api"
+import { api, type Product, type ProductColor, type Settings, type Category } from "@/lib/api"
+import { ColorPaletteEditor } from "@/components/color-palette-editor"
 import { downloadPriceList } from "@/lib/price-list"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
 
@@ -22,6 +23,8 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null)
   const [addImages, setAddImages] = useState<string[]>([])
   const [editImages, setEditImages] = useState<string[]>([])
+  const [addColors, setAddColors] = useState<ProductColor[]>([])
+  const [editColors, setEditColors] = useState<ProductColor[]>([])
 
   const fetchData = useCallback(async () => {
     try {
@@ -92,6 +95,7 @@ export default function ProductsPage() {
   const handleEdit = (product: Product) => {
     setSelectedProduct(product)
     setEditImages(product.images || [])
+    setEditColors(product.colors || [])
     setShowEditModal(true)
   }
 
@@ -136,10 +140,7 @@ export default function ProductsPage() {
         stockStatus: formData.get('stockStatus') as 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK',
         description: formData.get('description') as string,
         images: editImages,
-        colors: ((formData.get('colors') as string) || '')
-          .split(',')
-          .map((c) => c.trim())
-          .filter(Boolean),
+        colors: editColors,
         specifications: (() => {
           const txt = formData.get('specifications') as string | null
           if (!txt) return selectedProduct.specifications
@@ -213,10 +214,7 @@ export default function ProductsPage() {
         stockStatus,
         description,
         images: addImages,
-        colors: ((formData.get('colors') as string) || '')
-          .split(',')
-          .map((c) => c.trim())
-          .filter(Boolean),
+        colors: addColors,
         specifications,
         categoryId,
         categoryName,
@@ -230,6 +228,7 @@ export default function ProductsPage() {
       setProducts([created, ...products])
       setShowAddModal(false)
       setAddImages([])
+      setAddColors([])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create product')
     }
@@ -452,13 +451,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Available Colors</label>
-                  <input
-                    name="colors"
-                    type="text"
-                    className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
-                    placeholder="Black, White, Blue"
-                  />
-                  <p className="text-xs text-[#9ca3af] mt-1">Comma-separated — customers pick one of these before adding to cart</p>
+                  <ColorPaletteEditor colors={addColors} onChange={setAddColors} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>
@@ -578,14 +571,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Available Colors</label>
-                  <input
-                    name="colors"
-                    type="text"
-                    defaultValue={(selectedProduct.colors || []).join(', ')}
-                    className="w-full bg-[#21222d] border border-[rgba(255,255,255,0.08)] rounded-lg px-4 py-2 text-[#f3f4f6] focus:outline-none focus:border-[#8b5cf6]"
-                    placeholder="Black, White, Blue"
-                  />
-                  <p className="text-xs text-[#9ca3af] mt-1">Comma-separated — customers pick one of these before adding to cart</p>
+                  <ColorPaletteEditor colors={editColors} onChange={setEditColors} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#9ca3af] mb-2">Specifications (JSON)</label>

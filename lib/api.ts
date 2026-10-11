@@ -13,6 +13,12 @@ function getAuthToken(): string | null {
   }
 }
 
+interface ProductColor {
+  name: string
+  hex: string
+  inStock: boolean
+}
+
 interface Product {
   id: string
   name: string
@@ -26,7 +32,7 @@ interface Product {
   currency: string
   stockStatus: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'
   images: string[]
-  colors: string[]
+  colors: ProductColor[]
   specifications: Record<string, string>
   featured: boolean
   createdAt: string
@@ -528,6 +534,7 @@ class ApiClient {
 export const api = new ApiClient(API_BASE_URL, DEFAULT_TENANT_ID)
 export type {
   Product,
+  ProductColor,
   Category,
   Settings,
   PromotionalOffer,
