@@ -91,6 +91,8 @@ interface Customer {
   email: string
   phone: string
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'BLOCKED'
+  latitude?: number | null
+  longitude?: number | null
   tenantId: string
   createdAt: string
   _count?: { orders: number }

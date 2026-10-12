@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ProtectedRoute } from "@/components/protected-route"
-import { Users, Search, CheckCircle, XCircle, Loader2, Clock, Ban, Megaphone } from "lucide-react"
+import { Users, Search, CheckCircle, XCircle, Loader2, Clock, Ban, Megaphone, MapPin } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { api, type Customer } from "@/lib/api"
 import { useRealtimeSync } from "@/lib/use-realtime-sync"
@@ -153,7 +153,22 @@ export default function CustomersPage() {
                         {c.name || "—"}
                       </td>
                       <td className="px-4 py-3 text-[#9ca3af]">{c.email}</td>
-                      <td className="px-4 py-3 text-[#9ca3af]">{c.phone}</td>
+                      <td className="px-4 py-3 text-[#9ca3af]">
+                        <span className="inline-flex items-center gap-1.5">
+                          {c.phone}
+                          {c.latitude != null && c.longitude != null && (
+                            <a
+                              href={`https://maps.google.com/?q=${c.latitude},${c.longitude}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              title="Customer location"
+                              className="text-[#8b5cf6] hover:text-[#a78bfa]"
+                            >
+                              <MapPin className="h-3.5 w-3.5" />
+                            </a>
+                          )}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-[#9ca3af]">
                         {new Date(c.createdAt).toLocaleDateString()}
                       </td>
