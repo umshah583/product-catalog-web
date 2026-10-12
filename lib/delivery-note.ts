@@ -114,7 +114,7 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
       print-color-adjust: exact !important;
     }
     body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #1a1a2e; background: #fff; }
-    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 16mm 10mm; position: relative; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 16mm 10mm; display: flex; flex-direction: column; }
     .page-break { page-break-before: always; }
 
     .hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10mm; }
@@ -165,7 +165,7 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
     .totals .trow.grand .lbl, .totals .trow.grand .val { color: #fff; }
     .totals .trow.grand .val { font-size: 14px; }
 
-    .sign-wrap { display: flex; justify-content: space-between; margin-top: 10mm; gap: 10mm; }
+    .sign-wrap { display: flex; justify-content: space-between; margin-top: 10mm; margin-bottom: 10mm; gap: 10mm; }
     .sign { flex: 1; font-size: 11.5px; color: #333; position: relative; }
     .sign h6 { font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; color: #14335e; margin-bottom: 14px; text-transform: uppercase; }
     .sign .srow { display: flex; margin-bottom: 12px; }
@@ -173,13 +173,13 @@ export function printDeliveryNoteDoc(doc: DeliveryNoteDoc, settings: Settings | 
     .sign .sline { flex: 1; border-bottom: 1px solid #666; height: 14px; }
     .thanks { font-size: 12.5px; font-weight: 700; color: #2e9ad4; margin-top: 8mm; }
 
-    .foot { position: absolute; left: 0; right: 0; bottom: 0; background: #14335e; color: #fff; padding: 10px 16mm; display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; }
+    .foot { margin-top: auto; margin-left: -16mm; margin-right: -16mm; margin-bottom: -10mm; background: #14335e; color: #fff; padding: 10px 16mm; display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; }
     .foot .contact span { margin-right: 18px; }
     .foot .tag { color: #a8cbe8; letter-spacing: 0.4px; }
 
     @media print {
       body { margin: 0; }
-      .page { margin: 0; width: auto; min-height: auto; padding-bottom: 30mm; }
+      .page { margin: 0; width: auto; }
       @page { size: A4; margin: 0; }
     }
   `
