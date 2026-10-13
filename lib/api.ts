@@ -13,6 +13,51 @@ function getAuthToken(): string | null {
   }
 }
 
+function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem('catalog_auth')
+    if (!raw) return null
+    return JSON.parse(raw).refreshToken ?? null
+  } catch {
+    return null
+  }
+}
+
+// Deduplicates concurrent refreshes — parallel 401s share one call.
+let refreshPromise: Promise<boolean> | null = null
+
+/** Swap the expired access token for fresh tokens. */
+async function refreshAuthToken(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const rt = getRefreshToken()
+      if (!rt) return false
+      try {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: rt }),
+        })
+        if (!res.ok) return false
+        const tokens = await res.json()
+        const raw = localStorage.getItem('catalog_auth')
+        if (!raw) return false
+        const auth = JSON.parse(raw)
+        auth.accessToken = tokens.accessToken
+        auth.refreshToken = tokens.refreshToken ?? auth.refreshToken
+        localStorage.setItem('catalog_auth', JSON.stringify(auth))
+        return true
+      } catch {
+        return false
+      }
+    })().finally(() => {
+      refreshPromise = null
+    })
+  }
+  return refreshPromise
+}
+
 interface ProductColor {
   name: string
   hex: string
@@ -299,18 +344,25 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`
     }
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       ...options,
       headers,
     })
 
     if (response.status === 401) {
-      // Token expired or invalid — clear stored auth and redirect to login
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('catalog_auth')
-        window.location.href = '/login'
+      // Access token expired — silently refresh and retry once.
+      const refreshed = await refreshAuthToken()
+      if (refreshed) {
+        headers['Authorization'] = `Bearer ${getAuthToken()}`
+        response = await fetch(url, { ...options, headers })
       }
-      throw new Error('Session expired. Please log in again.')
+      if (response.status === 401) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('catalog_auth')
+          window.location.href = '/login'
+        }
+        throw new Error('Session expired. Please log in again.')
+      }
     }
 
     if (!response.ok) {
@@ -576,14 +628,18 @@ class ApiClient {
   async uploadFile(file: File): Promise<{ url: string; key: string }> {
     const form = new FormData()
     form.append('file', file)
-    const token = getAuthToken()
     const headers: Record<string, string> = { 'x-tenant-slug': this.tenantId }
-    if (token) headers['Authorization'] = `Bearer ${token}`
-    const res = await fetch(`${this.baseUrl}/upload/document`, {
-      method: 'POST',
-      headers,
-      body: form,
-    })
+    const send = () => {
+      const token = getAuthToken()
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      return fetch(`${this.baseUrl}/upload/document`, {
+        method: 'POST',
+        headers,
+        body: form,
+      })
+    }
+    let res = await send()
+    if (res.status === 401 && await refreshAuthToken()) res = await send()
     if (!res.ok) throw new Error('Upload failed')
     return res.json()
   }
@@ -607,13 +663,17 @@ class ApiClient {
   }
 
   async fetchCreditAppPdf(id: string): Promise<Blob> {
-    const token = getAuthToken()
     const headers: Record<string, string> = { 'x-tenant-slug': this.tenantId }
-    if (token) headers['Authorization'] = `Bearer ${token}`
-    const res = await fetch(
-      `${this.baseUrl}/credit-applications/${id}/pdf?disposition=inline`,
-      { headers },
-    )
+    const send = () => {
+      const token = getAuthToken()
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      return fetch(
+        `${this.baseUrl}/credit-applications/${id}/pdf?disposition=inline`,
+        { headers },
+      )
+    }
+    let res = await send()
+    if (res.status === 401 && await refreshAuthToken()) res = await send()
     if (!res.ok) throw new Error('Failed to generate PDF')
     return res.blob()
   }
