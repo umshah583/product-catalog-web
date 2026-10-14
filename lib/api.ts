@@ -237,6 +237,7 @@ interface CreditAppAudit {
 interface CreditApplication {
   id: string
   appNumber: string
+  formType: 'CREDIT_APP' | 'VAT_RCM'
   customerName: string
   customerPhone: string | null
   customerEmail: string | null
@@ -265,6 +266,7 @@ interface CreditApplicationInput {
   signatureData?: string
   stampData?: string
   initials?: string
+  formType?: string
 }
 
 interface OrderItem {
@@ -591,8 +593,11 @@ class ApiClient {
   }
 
   // Credit Applications
-  async getCreditApplications(status?: string): Promise<CreditApplication[]> {
-    const query = status ? `?status=${status}` : ''
+  async getCreditApplications(status?: string, formType?: string): Promise<CreditApplication[]> {
+    const params = new URLSearchParams()
+    if (status) params.set('status', status)
+    if (formType) params.set('type', formType)
+    const query = params.toString() ? `?${params}` : ''
     return this.request<CreditApplication[]>(`/credit-applications${query}`)
   }
 

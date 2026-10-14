@@ -27,7 +27,10 @@ export default function CreditApplicationsPage() {
 
   const fetchApps = useCallback(async () => {
     try {
-      const data = await api.getCreditApplications(statusFilter === "ALL" ? undefined : statusFilter)
+      const data = await api.getCreditApplications(
+        statusFilter === "ALL" ? undefined : statusFilter,
+        "CREDIT_APP",
+      )
       setApps(data)
       setError(null)
     } catch (err) {
