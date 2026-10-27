@@ -29,7 +29,7 @@ export function buildPriceListText(
   for (const cat of sortedCategories) {
     categoryMap.set(cat.id, [])
   }
-  let uncategorized: Product[] = []
+  const uncategorized: Product[] = []
   for (const p of products) {
     if (categoryMap.has(p.categoryId)) {
       categoryMap.get(p.categoryId)!.push(p)
@@ -38,37 +38,59 @@ export function buildPriceListText(
     }
   }
 
+  // Split a category's products into brand groups, alphabetically sorted,
+  // with unbranded products last
+  const groupByBrand = (items: Product[]): [string, Product[]][] => {
+    const map = new Map<string, Product[]>()
+    for (const p of items) {
+      const brand = (p.brand || "").trim()
+      if (!map.has(brand)) map.set(brand, [])
+      map.get(brand)!.push(p)
+    }
+    return [...map.entries()].sort(([a], [b]) => {
+      if (a === "") return 1
+      if (b === "") return -1
+      return a.localeCompare(b)
+    })
+  }
+
+  const formatLine = (p: Product): string => {
+    const priceStr = `${currencySymbol}${Number(p.price).toFixed(2)}`
+    const discount = p.discountPrice != null ? ` _now ${currencySymbol}${Number(p.discountPrice).toFixed(2)}_` : ""
+    const stock =
+      p.stockStatus === "OUT_OF_STOCK"
+        ? " - _out of stock_"
+        : p.stockStatus === "LOW_STOCK"
+          ? " - _low stock_"
+          : ""
+    return `${p.name} - ${priceStr}${discount}${stock}`
+  }
+
   let index = 1
+  const appendItems = (items: Product[]) => {
+    const brandGroups = groupByBrand(items)
+    const hasBrands = brandGroups.some(([brand]) => brand !== "")
+    for (const [brand, brandItems] of brandGroups) {
+      if (hasBrands) lines.push(brand ? `*${brand}*` : "*Other*")
+      for (const p of brandItems) {
+        lines.push(`${index}. ${formatLine(p)}`)
+        index++
+      }
+      if (hasBrands) lines.push("")
+    }
+  }
+
   for (const cat of sortedCategories) {
     const items = categoryMap.get(cat.id) || []
     if (items.length === 0) continue
     lines.push(`*${cat.name}*`)
-    for (const p of items) {
-      const price = Number(p.price)
-      const priceStr = `${currencySymbol}${price.toFixed(2)}`
-      const discount = p.discountPrice != null ? ` _now ${currencySymbol}${Number(p.discountPrice).toFixed(2)}_` : ""
-      const brand = p.brand ? ` (${p.brand})` : ""
-      const stock =
-        p.stockStatus === "OUT_OF_STOCK"
-          ? " - _out of stock_"
-          : p.stockStatus === "LOW_STOCK"
-            ? " - _low stock_"
-            : ""
-      lines.push(`${index}. ${p.name}${brand} - ${priceStr}${discount}${stock}`)
-      index++
-    }
+    appendItems(items)
     lines.push("")
   }
 
   if (uncategorized.length > 0) {
-    lines.push("*Other*")
-    for (const p of uncategorized) {
-      const price = Number(p.price)
-      const priceStr = `${currencySymbol}${price.toFixed(2)}`
-      const brand = p.brand ? ` (${p.brand})` : ""
-      lines.push(`${index}. ${p.name}${brand} - ${priceStr}`)
-      index++
-    }
+    lines.push("*Uncategorized*")
+    appendItems(uncategorized)
     lines.push("")
   }
 
